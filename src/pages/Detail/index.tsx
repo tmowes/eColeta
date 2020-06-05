@@ -20,6 +20,7 @@ interface RouteParams {
 interface Data {
   point: {
     image: string
+    image_url: string
     name: string
     whatsapp: string
     email: string
@@ -70,7 +71,10 @@ const Detail: React.FC = () => {
         <TouchableOpacity onPress={handleNavigateBack}>
           <Icon name="arrow-left" size={24} color="#34CB79" />
         </TouchableOpacity>
-        <Image source={{ uri: data.point.image }} style={styles.pointImage} />
+        <Image
+          source={{ uri: data.point.image_url }}
+          style={styles.pointImage}
+        />
         <Text style={styles.pointName}>{data.point.name}</Text>
         {data.items.map(item => (
           <Text key={item.title} style={styles.pointItems}>

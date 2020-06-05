@@ -25,6 +25,7 @@ interface Point {
   id: number
   name: string
   image: string
+  image_url: string
   latitude: number
   longitude: number
 }
@@ -43,7 +44,6 @@ const Points: React.FC = () => {
     0,
     0,
   ])
-
   const routeParams = route.params as RouteParams
 
   useEffect(() => {
@@ -61,7 +61,6 @@ const Points: React.FC = () => {
     }
     loadPositions()
   }, [])
-
   useEffect(() => {
     async function loadItems(): Promise<void> {
       const response = await api.get('items')
@@ -82,6 +81,7 @@ const Points: React.FC = () => {
     }
     loadPoints()
   }, [routeParams.city, routeParams.uf, selectedItems])
+
   function handleSelectItem(id: number) {
     const alreadySelected = selectedItems.findIndex(item => item === id)
     if (alreadySelected >= 0) {
@@ -131,7 +131,7 @@ const Points: React.FC = () => {
                 >
                   <View style={styles.mapMarkerContainer}>
                     <Image
-                      source={{ uri: point.image }}
+                      source={{ uri: point.image_url }}
                       style={styles.mapMarkerImage}
                     />
                     <Text style={styles.mapMarkerTitle}>{point.name}</Text>
@@ -174,20 +174,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     paddingTop: 32,
   },
-
   title: {
     fontSize: 20,
     fontFamily: 'Ubuntu_700Bold',
     marginTop: 24,
   },
-
   description: {
     color: '#6C6C80',
     fontSize: 16,
     marginTop: 4,
     fontFamily: 'Roboto_400Regular',
   },
-
   mapContainer: {
     flex: 1,
     width: '100%',
@@ -195,17 +192,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginTop: 16,
   },
-
   map: {
     width: '100%',
     height: '100%',
   },
-
   mapMarker: {
     width: 90,
     height: 80,
   },
-
   mapMarkerContainer: {
     width: 90,
     height: 70,
@@ -215,13 +209,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
   },
-
   mapMarkerImage: {
     width: 90,
     height: 45,
     resizeMode: 'cover',
   },
-
   mapMarkerTitle: {
     flex: 1,
     fontFamily: 'Roboto_400Regular',
@@ -229,13 +221,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 23,
   },
-
   itemsContainer: {
     flexDirection: 'row',
     marginTop: 16,
     marginBottom: 32,
   },
-
   item: {
     backgroundColor: '#fff',
     borderWidth: 2,
@@ -249,15 +239,12 @@ const styles = StyleSheet.create({
     marginRight: 8,
     alignItems: 'center',
     justifyContent: 'space-between',
-
     textAlign: 'center',
   },
-
   selectedItem: {
     borderColor: '#34CB79',
     borderWidth: 2,
   },
-
   itemTitle: {
     fontFamily: 'Roboto_400Regular',
     textAlign: 'center',
