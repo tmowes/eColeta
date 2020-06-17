@@ -1,28 +1,55 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   ImageBackground,
   Text,
   StyleSheet,
   Image,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native'
 import { RectButton } from 'react-native-gesture-handler'
 import { Feather as Icon } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
+import RNPickerSelect from 'react-native-picker-select'
+import axios from 'axios'
 
 import imgBackground from '../../assets/home-background.png'
 import logo from '../../assets/logo.png'
+import { IBGEUFResponse, IBGECityResponse } from './types'
 
 const Home: React.FC = () => {
-  const [uf, setUf] = useState('')
-  const [city, setCity] = useState('')
-  const navigation = useNavigation()
+  const { navigate } = useNavigation()
+  const [selectedUf, setSelectedUF] = useState('0')
+  const [selectedCity, setSelectedCity] = useState('0')
+  const [ufs, setUfs] = useState<string[]>([])
+  const [cities, setCities] = useState<string[]>([])
+
+  useEffect(() => {
+    async function loadUFs() {
+      const { data } = await axios.get<IBGEUFResponse[]>(
+        'https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome',
+      )
+      setUfs(data.map(uf => uf.sigla))
+    }
+    loadUFs()
+  }, [])
+
+  useEffect(() => {
+    if (selectedUf === '0') return
+    async function loadCities() {
+      const { data } = await axios.get<IBGECityResponse[]>(
+        `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`,
+      )
+      setCities(data.map(city => city.nome))
+    }
+    loadCities()
+  }, [selectedUf])
+
   function handleNavigationToPoints() {
-    navigation.navigate('Points', { uf, city })
+    navigate('Points', { uf: selectedUf, city: selectedCity })
   }
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -43,21 +70,37 @@ const Home: React.FC = () => {
           </Text>
         </View>
         <View style={styles.footer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite o estado (UF)"
-            maxLength={2}
-            autoCapitalize="characters"
-            autoCorrect={false}
-            value={uf}
-            onChangeText={setUf}
+          <RNPickerSelect
+            style={pickerSelectStyles}
+            placeholder={{
+              label: 'Escolha a UF',
+              value: null,
+              color: '#9EA0A4',
+            }}
+            onValueChange={value => {
+              setSelectedUF(value)
+            }}
+            useNativeAndroidPickerStyle={false}
+            items={ufs.map(uf => ({ label: uf, value: uf }))}
+            Icon={() => {
+              return <Icon name="chevron-down" color="#34CB79" size={24} />
+            }}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Digite cidade"
-            autoCorrect={false}
-            value={city}
-            onChangeText={setCity}
+          <RNPickerSelect
+            style={pickerSelectStyles}
+            placeholder={{
+              label: 'Escolha a cidade',
+              value: null,
+              color: '#9EA0A4',
+            }}
+            onValueChange={value => {
+              setSelectedCity(value)
+            }}
+            useNativeAndroidPickerStyle={false}
+            items={cities.map(city => ({ label: city, value: city }))}
+            Icon={() => {
+              return <Icon name="chevron-down" color="#34CB79" size={24} />
+            }}
           />
           <RectButton style={styles.button} onPress={handleNavigationToPoints}>
             <View style={styles.buttonIcon}>
@@ -70,6 +113,33 @@ const Home: React.FC = () => {
     </KeyboardAvoidingView>
   )
 }
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    paddingRight: 30,
+    height: 60,
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    marginBottom: 8,
+    paddingHorizontal: 24,
+    fontSize: 16,
+    color: '#6C6C80',
+  },
+  inputAndroid: {
+    paddingRight: 30,
+    height: 60,
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    marginBottom: 8,
+    paddingHorizontal: 24,
+    fontSize: 16,
+    color: '#6C6C80',
+  },
+  iconContainer: {
+    top: 18,
+    right: 12,
+  },
+})
 
 const styles = StyleSheet.create({
   container: {

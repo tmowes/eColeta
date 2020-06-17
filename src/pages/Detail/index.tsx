@@ -13,55 +13,38 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { RectButton } from 'react-native-gesture-handler'
 import * as MailComposer from 'expo-mail-composer'
 import api from '../../services/api'
-
-interface RouteParams {
-  point_id: number
-}
-interface Data {
-  point: {
-    image: string
-    image_url: string
-    name: string
-    whatsapp: string
-    email: string
-    city: string
-    uf: string
-  }
-  items: {
-    title: string
-  }[]
-}
+import { Details, RouteParams } from './type'
 
 const Detail: React.FC = () => {
-  const [data, setData] = useState<Data>({} as Data)
-  const navigation = useNavigation()
-  const route = useRoute()
-  const routeParams = route.params as RouteParams
+  const [details, setDetails] = useState<Details>({} as Details)
+  const { goBack } = useNavigation()
+  const { params } = useRoute()
+  const routeParams = params as RouteParams
 
   useEffect(() => {
     async function loadPointsParams(): Promise<void> {
-      const response = await api.get(`points/${routeParams.point_id}`)
-      setData(response.data)
+      const { data } = await api.get(`points/${routeParams.point_id}`)
+      setDetails(data)
     }
     loadPointsParams()
   }, [routeParams.point_id])
 
   function handleNavigateBack() {
-    navigation.goBack()
+    goBack()
   }
   function handleWhatsapp() {
     Linking.openURL(
-      `whatsapp://send?phone=${data.point.whatsapp}&text=Tenho interesse sobre coleta de residuos.`,
+      `whatsapp://send?phone=${details.point.whatsapp}&text=Tenho interesse sobre coleta de residuos.`,
     )
   }
   function handleComposeMail() {
     MailComposer.composeAsync({
       subject: 'Interesse na coleta de residuos',
-      recipients: [data.point.email],
+      recipients: [details.point.email],
     })
   }
 
-  if (!data.point) {
+  if (!details.point) {
     return null
   }
 
@@ -72,11 +55,11 @@ const Detail: React.FC = () => {
           <Icon name="arrow-left" size={24} color="#34CB79" />
         </TouchableOpacity>
         <Image
-          source={{ uri: data.point.image_url }}
+          source={{ uri: details.point.image_url }}
           style={styles.pointImage}
         />
-        <Text style={styles.pointName}>{data.point.name}</Text>
-        {data.items.map(item => (
+        <Text style={styles.pointName}>{details.point.name}</Text>
+        {details.items.map(item => (
           <Text key={item.title} style={styles.pointItems}>
             {item.title}
           </Text>
@@ -84,7 +67,7 @@ const Detail: React.FC = () => {
         <View>
           <Text style={styles.addressTitle}>Endereço</Text>
           <Text style={styles.addressContent}>
-            {`${data.point.city},${data.point.uf}`}
+            {`${details.point.city},${details.point.uf}`}
           </Text>
         </View>
       </View>

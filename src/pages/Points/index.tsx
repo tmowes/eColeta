@@ -15,28 +15,11 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { SvgUri } from 'react-native-svg'
 import * as Location from 'expo-location'
 import api from '../../services/api'
-
-interface Item {
-  id: number
-  title: string
-  image_url: string
-}
-interface Point {
-  id: number
-  name: string
-  image: string
-  image_url: string
-  latitude: number
-  longitude: number
-}
-interface RouteParams {
-  uf: string
-  city: string
-}
+import { Item, RouteParams, Point } from './types'
 
 const Points: React.FC = () => {
-  const navigation = useNavigation()
-  const route = useRoute()
+  const { navigate, goBack } = useNavigation()
+  const { params } = useRoute()
   const [items, setItems] = useState<Item[]>([])
   const [points, setPoints] = useState<Point[]>([])
   const [selectedItems, setSelectedItems] = useState<number[]>([])
@@ -44,7 +27,7 @@ const Points: React.FC = () => {
     0,
     0,
   ])
-  const routeParams = route.params as RouteParams
+  const routeParams = params as RouteParams
 
   useEffect(() => {
     async function loadPositions(): Promise<void> {
@@ -55,29 +38,29 @@ const Points: React.FC = () => {
           'Precisamos de sua autorização para obter sua localização',
         )
       }
-      const location = await Location.getCurrentPositionAsync()
-      const { latitude, longitude } = location.coords
+      const { coords } = await Location.getCurrentPositionAsync()
+      const { latitude, longitude } = coords
       setInitialPosition([latitude, longitude])
     }
     loadPositions()
   }, [])
   useEffect(() => {
     async function loadItems(): Promise<void> {
-      const response = await api.get('items')
-      setItems(response.data)
+      const { data } = await api.get('items')
+      setItems(data)
     }
     loadItems()
   }, [])
   useEffect(() => {
     async function loadPoints(): Promise<void> {
-      const response = await api.get('points', {
+      const { data } = await api.get('points', {
         params: {
           city: routeParams.city,
           uf: routeParams.uf,
           items: selectedItems,
         },
       })
-      setPoints(response.data)
+      setPoints(data)
     }
     loadPoints()
   }, [routeParams.city, routeParams.uf, selectedItems])
@@ -92,10 +75,10 @@ const Points: React.FC = () => {
     }
   }
   function handleNavigateBack() {
-    navigation.goBack()
+    goBack()
   }
   function handleNavigateToDetail(id: number) {
-    navigation.navigate('Detail', { point_id: id })
+    navigate('Detail', { point_id: id })
   }
 
   return (
